@@ -4,9 +4,9 @@
   "description": "Backend  for Curve Portal",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "start:prod": "cross-env NODE_ENV=production server.js",
-    "debug": "ndb server.js"
+    "start": "nodemon index.js",
+    "start:prod": "cross-env NODE_ENV=production index.js",
+    "debug": "ndb index.js"
   },
   "author": "Rapheal James",
   "license": "ISC",
