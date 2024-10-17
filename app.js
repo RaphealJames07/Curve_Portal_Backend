@@ -75,6 +75,10 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/users', userRouter);
 
+app.get("/", (req, res) => {
+  res.send("Welcome to curve-portal-backend server!");
+});
+
 // Handle Unhandled ROutes
 app.all('*', (req, res, next) => {
   // res.status(404).json({
@@ -92,9 +96,7 @@ app.all('*', (req, res, next) => {
   );
 });
 
-app.get("/", (req, res) => {
-  res.send("Welcome to curve-portal-backend server!");
-});
+
 
 app.use(globalErrorHandler);
 
