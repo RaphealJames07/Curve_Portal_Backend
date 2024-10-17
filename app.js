@@ -92,6 +92,10 @@ app.all('*', (req, res, next) => {
   );
 });
 
+app.get("/", (req, res) => {
+  res.send("Welcome to curve-portal-backend server!");
+});
+
 app.use(globalErrorHandler);
 
 // 5) STARITING UP SERVER
