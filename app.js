@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 // 1) REQUIRE TOP LEVEL MODULES
 const express = require('express');
+const cors = require("cors");
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -13,6 +14,12 @@ const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 dotenv.config({ path: './config.env' });
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"], // Add the allowed methods here
+  })
+);
 
 const userRouter = require('./routes/userRoutes');
 
