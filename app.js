@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/users', userRouter);
 
 app.get("/", (req, res) => {
-  res.send(`Welcome to curve-portal-backend server! mode ${process.env.NODE_ENV}`);
+  res.send(`Welcome to curve-portal-backend server! you are on ${process.env.NODE_ENV} mode`);
 });
 
 // Handle Unhandled ROutes
