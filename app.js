@@ -22,6 +22,7 @@ app.use(
 );
 
 const userRouter = require('./routes/userRoutes');
+const cohortRouter = require('./routes/cohortRoutes');
 
 // 2) DEFINE MIDDLEWARES
 
@@ -81,6 +82,7 @@ app.use((req, res, next) => {
 
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/cohort', cohortRouter);
 
 app.get("/", (req, res) => {
   res.send(`Welcome to curve-portal-backend server! you are on ${process.env.NODE_ENV} mode`);

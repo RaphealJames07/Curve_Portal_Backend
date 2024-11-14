@@ -1,65 +1,58 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
 const bcrypt = require("bcryptjs");
+const validator = require("validator");
 const crypto = require("crypto");
 
-// name, email, photo, password, confirmPassword
-
-const userSchema = new mongoose.Schema({
+const studentSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: [true, "Please enter your first name"],
-        // trim: true,
+        required: true,
     },
     lastName: {
         type: String,
-        required: [true, "Please enter your last name"],
-        // trim: true,
+        required: true,
     },
     email: {
         type: String,
-        required: [true, "Please enter your email"],
+        required: true,
         unique: true,
-        // trim: true,
-        lowercase: true,
-        // match: [
-        //   /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        //   'Please fill a valid email address',
-        // ],
         validate: [validator.isEmail, "Please fill a valid email address"],
+        lowercase: true,
     },
-    stack:{
-        type:String,
-        enum: ["frontend", "backend", "productdesign"],
-        required: [true,'Please select a stack']
-    },
-    photo: {
+    admissionCode: {
         type: String,
+        required: true,
+        unique: true,
     },
-    role: {
+    cohort: {
+        type: Number,
+        required: true,
+    },
+    status: {
         type: String,
-        enum: ["student", "admin", "teacher", "alumni"],
-        default: "student",
+        enum: ["active", "alumni"],
+        default: "active",
+    },
+    stack: {
+        type: String,
+        enum: ["frontend", "backend", "product-design"],
+        // required: true,
     },
     gender: {
         type: String,
         enum: ["male", "female"],
-        required: [true,'Please select a gender']
-    },
-    admissionCode: {
-        type: String,
-        required: [true,'Please provide your admission code']
+        // required: true,
     },
     password: {
         type: String,
-        required: [true, "Please enter your password"],
+        // required: [true, "Please enter your password"],
         minLength: 8,
         // trim: true,
         select: false,
     },
     confirmPassword: {
         type: String,
-        required: [true, "Please confirm your password"],
+        // required: [true, "Please confirm your password"],
         // trim: true,
         validate: {
             // This only works on CREATE and SAVE
@@ -81,7 +74,7 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-userSchema.pre("save", async function (next) {
+studentSchema.pre("save", async function (next) {
     // Only run this function if password was actually modified
     if (!this.isModified("password")) return next();
 
@@ -93,25 +86,25 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-userSchema.pre("save", function (next) {
+studentSchema.pre("save", function (next) {
     if (!this.isModified("password") || this.isNew) return next();
     this.passwordChangedAt = Date.now() - 1000;
     next();
 });
 
-userSchema.pre(/^find/, function (next) {
+studentSchema.pre(/^find/, function (next) {
     this.find({active: {$ne: false}});
     next();
 });
 
-userSchema.methods.correctPassword = async function (
+studentSchema.methods.correctPassword = async function (
     userPassword,
-    systemPassword
+    dbPassword
 ) {
-    return await bcrypt.compare(userPassword, systemPassword);
+    return await bcrypt.compare(userPassword, dbPassword);
 };
 
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+studentSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     if (this.passwordChangedAt) {
         const changedTimestamp = parseInt(
             this.passwordChangedAt.getTime() / 1000,
@@ -123,7 +116,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     return false;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
+studentSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(32).toString("hex");
 
     this.passwordResetToken = crypto
@@ -131,13 +124,11 @@ userSchema.methods.createPasswordResetToken = function () {
         .update(resetToken)
         .digest("hex");
 
-    console.log({resetToken}, this.passwordResetToken);
-
     this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
     return resetToken;
 };
 
-const User = mongoose.model("User", userSchema);
+const Student = mongoose.model("Student", studentSchema);
 
-module.exports = User;
+module.exports = Student;
