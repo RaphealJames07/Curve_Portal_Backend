@@ -14,7 +14,7 @@ const cohortSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-    status: {
+    cohortStatus: {
         type: String,
         enum: ["active", "inactive"],
         default: "active",
@@ -22,7 +22,7 @@ const cohortSchema = new mongoose.Schema({
     students: [
         {
             type: mongoose.Schema.ObjectId,
-            ref: "student",
+            ref: "Student",
         },
     ],
     bestStudents: [

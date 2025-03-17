@@ -23,7 +23,7 @@ const createSendToken = (user, statusCode, res) => {
 
     res.cookie("jwt", token, cookieOptions);
 
-    // remove password from response
+    
     user.password = undefined;
 
     res.status(statusCode).json({
@@ -74,7 +74,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // 2) Verificattion token
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-    console.log(decoded);
 
     // 3) Check if user exists
     const currentUser = await User.findById(decoded.id);
@@ -116,7 +115,7 @@ exports.restrictTo =
     };
 
 exports.forgetPassword = catchAsync(async (req, res, next) => {
-    // 1) Get user based on POSTed email
+    // 1) Get user based on POSTed emaila
     const user = await User.findOne({email: req.body.email});
 
     if (!user) {

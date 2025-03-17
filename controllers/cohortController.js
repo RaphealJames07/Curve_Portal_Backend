@@ -3,7 +3,9 @@
 const ExcelJS = require("exceljs");
 const crypto = require("crypto");
 const Cohort = require("../models/cohortModel");
+const Scheme = require("../models/schemeModel");
 const Student = require("../models/studentModel");
+const Attendance = require("../models/attendanceModel");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const sendEmail = require("../utils/email");
@@ -41,7 +43,14 @@ exports.createCohort = catchAsync(async (req, res, next) => {
     if (prevCohort) {
         return next(new AppError("Cohort already exists", 400));
     }
-
+    await Scheme.create({
+        cohortNumber: cohortData.cohortNumber,
+        schemes: {
+            frontendScheme: [],
+            backendScheme: [],
+            productDesignScheme: [],
+        },
+    });
     // Step 3: Create student profiles and send admission codes using forEach
     const studentPromises = studentsFromExcel.map(async (student) => {
         const admissionCode = generateAdmissionCode(); // A function that generates a unique code
@@ -52,6 +61,7 @@ exports.createCohort = catchAsync(async (req, res, next) => {
             admissionCode,
             cohort: cohortData.cohortNumber,
             stack: student.stack,
+            // active:false
         });
 
         // Send email to student with the admission code
@@ -67,14 +77,45 @@ exports.createCohort = catchAsync(async (req, res, next) => {
     await Promise.all(studentPromises);
     // Step 2: Create the cohort
 
-    await Cohort.create({
+    const newCohort = await Cohort.create({
         cohortNumber: cohortData.cohortNumber,
         startDate: cohortData.startDate,
         endDate: cohortData.endDate,
-    }); 
+    });
 
+    const students = await Student.find({ cohort: cohortData.cohortNumber });
+
+
+    // Generate class days (Monday, Wednesday, Friday)
+    const start = new Date(cohortData.startDate);
+    const end = new Date(cohortData.endDate);
+    const classDays = [];
+    const daysOfWeek = [1, 3, 5]; // Mon, Wed, Fri (0 = Sunday, 6 = Saturday)
+
+    while (start <= end) {
+        if (daysOfWeek.includes(start.getDay())) {
+            classDays.push({
+                day: classDays.length + 1,
+                date: new Date(start),
+                students: students.map((student) => ({
+                    studentId: student._id,
+                    status: "Absent",
+                })),
+            });
+        }
+        start.setDate(start.getDate() + 1);
+    }
+
+    // Create the attendance sheet for the cohort
+     await Attendance.create({
+        cohortId: newCohort._id,
+        classDays,
+    });
     res.status(201).json({
         status: "success",
         message: "Cohort created and students onboarded.",
+        cohort: newCohort,
+        studentsOnboarded: studentsFromExcel.length,
     });
+    
 });

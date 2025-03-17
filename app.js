@@ -3,10 +3,7 @@
 const express = require('express');
 const cors = require("cors");
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const xss = require('xss-clean');
 const hpp = require('hpp');
 const dotenv = require('dotenv');
 const AppError = require('./utils/appError');
@@ -17,12 +14,15 @@ dotenv.config({ path: './config.env' });
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"], // Add the allowed methods here
+    methods: ["GET", "POST", "PUT", "DELETE","PATCH"], // Add the allowed methods here
   })
 );
 
 const userRouter = require('./routes/userRoutes');
 const cohortRouter = require('./routes/cohortRoutes');
+const studentRouter = require('./routes/studentRoutes');
+const schemeRouter = require('./routes/schemeRoutes');
+const attendanceRouter = require('./routes/attendanceRoutes');
 
 // 2) DEFINE MIDDLEWARES
 
@@ -34,14 +34,6 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Limiting request from same IP address
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 60 * 60 * 1000,
-  message: 'Too many requests, please try again in an hour.',
-});
-
-app.use('/api', limiter);
 
 //Body parser, reading data from body into req.body
 app.use(
@@ -50,11 +42,6 @@ app.use(
   }),
 );
 
-// Data sanitization against NoSQL query injection
-app.use(mongoSanitize());
-
-// Data sanitization against XSS
-app.use(xss());
 
 // Prevent parameter pollution
 app.use(
@@ -83,6 +70,9 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/cohort', cohortRouter);
+app.use('/api/v1/student', studentRouter);
+app.use('/api/v1/scheme', schemeRouter);
+app.use('/api/v1/attendance', attendanceRouter);
 
 app.get("/", (req, res) => {
   res.send(`Welcome to curve-portal-backend server! you are on ${process.env.NODE_ENV} mode`);

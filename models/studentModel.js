@@ -30,8 +30,8 @@ const studentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["active", "alumni"],
-        default: "active",
+        enum: ["present", "alumni"],
+        default: "present",
     },
     stack: {
         type: String,
@@ -40,8 +40,9 @@ const studentSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ["male", "female"],
-        // required: true,
+        enum: ["male", "female", "null"],
+        required: true,
+        default: "null",
     },
     password: {
         type: String,
@@ -71,6 +72,31 @@ const studentSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
         select: false,
+    },
+    hasOnboard: {
+        type: Boolean,
+        default: false,
+        select: false,
+    },
+    jwtVersion: {
+        type: Number,
+        default: 0,
+    },
+    faceDescriptor: {
+        type: String,
+    },
+    initVector: {
+        type: String,
+    },
+});
+
+studentSchema.set("toJSON", {
+    transform: function (doc, ret) {
+        delete ret.__v;
+        delete ret.hasOnboard;
+        delete ret.passwordChangedAt;
+        delete ret.jwtVersion;
+        return ret;
     },
 });
 
